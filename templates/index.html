@@ -97,6 +97,7 @@
             resultDiv.innerHTML = '';
 
             try {
+                // Simulate an API call
                 const response = await fetch('/api/guardrail', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -106,26 +107,22 @@
                 const data = await response.json();
 
                 if (data.action === 'GUARDRAIL_INTERVENED') {
-                    data.assessments.forEach((assessment) => {
-                        if (assessment.topicPolicy?.topics?.some(topic => topic.action === 'BLOCKED')) {
-                            assessment.topicPolicy.topics.forEach(topic => {
-                                const blockedDiv = document.createElement('div');
-                                blockedDiv.className = 'result blocked';
-                                blockedDiv.innerHTML = `<span class="icon">❌</span> <span class="message">Blocked topic: ${topic.name}</span>`;
-                                resultDiv.appendChild(blockedDiv);
-                            });
-                        }
-    
-                        if (assessment.sensitiveInformationPolicy?.piiEntities?.some(entity => entity.action === 'MASKED')) {
+                    data.assessments.forEach(assessment => {
+                        if (assessment.sensitiveInformationPolicy?.piiEntities) {
                             assessment.sensitiveInformationPolicy.piiEntities.forEach(entity => {
-                                const maskedDiv = document.createElement('div');
-                                maskedDiv.className = 'result masked';
-                                maskedDiv.innerHTML = `<span class="icon">⚠️</span> <span class="message">Masked sensitive info: ${entity.match} (${entity.type})</span>`;
-                                resultDiv.appendChild(maskedDiv);
+                                const resultDivElement = document.createElement('div');
+                                const action = entity.action === 'BLOCKED' ? 'Blocked' : 'Anonymized';
+                                const className = entity.action === 'BLOCKED' ? 'result blocked' : 'result masked';
+
+                                resultDivElement.className = className;
+                                resultDivElement.innerHTML = `
+                                    <span class="icon">${entity.action === 'BLOCKED' ? '❌' : '⚠️'}</span>
+                                    <span class="message">${action} sensitive info: ${entity.match} (${entity.type})</span>
+                                `;
+                                resultDiv.appendChild(resultDivElement);
                             });
                         }
-                    })
-
+                    });
                 } else {
                     const successDiv = document.createElement('div');
                     successDiv.className = 'result success';
