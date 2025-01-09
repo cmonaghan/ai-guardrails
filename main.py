@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from dotenv import load_dotenv
 import boto3
 import os
-import json
 
 
 load_dotenv()  # take environment variables from .env.
@@ -15,13 +14,6 @@ bedrock_client = boto3.client(
     region_name=os.environ.get('AWS_REGION', 'us-east-1'),
     aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
     aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-)
-
-bedrock_blah = boto3.client(
-    'bedrock',
-    # region_name=os.environ.get('AWS_REGION', 'us-east-1'),
-    # aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-    # aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
 )
 
 @app.route('/')
