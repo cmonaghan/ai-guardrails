@@ -97,7 +97,6 @@
             resultDiv.innerHTML = '';
 
             try {
-                // Simulate an API call
                 const response = await fetch('/api/guardrail', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -108,6 +107,7 @@
 
                 if (data.action === 'GUARDRAIL_INTERVENED') {
                     data.assessments.forEach(assessment => {
+                        // Handle sensitiveInformationPolicy
                         if (assessment.sensitiveInformationPolicy?.piiEntities) {
                             assessment.sensitiveInformationPolicy.piiEntities.forEach(entity => {
                                 const resultDivElement = document.createElement('div');
@@ -120,6 +120,69 @@
                                     <span class="message">${action} sensitive info: ${entity.match} (${entity.type})</span>
                                 `;
                                 resultDiv.appendChild(resultDivElement);
+                            });
+                        }
+
+                        // Handle topicPolicy
+                        if (assessment.topicPolicy?.topics) {
+                            assessment.topicPolicy.topics.forEach(topic => {
+                                const resultDivElement = document.createElement('div');
+                                resultDivElement.className = 'result blocked';
+                                resultDivElement.innerHTML = `
+                                    <span class="icon">❌</span>
+                                    <span class="message">Blocked topic: ${topic.name}</span>
+                                `;
+                                resultDiv.appendChild(resultDivElement);
+                            });
+                        }
+
+                        // Handle contentPolicy
+                        if (assessment.contentPolicy?.filters) {
+                            assessment.contentPolicy.filters.forEach(filter => {
+                                const resultDivElement = document.createElement('div');
+                                resultDivElement.className = 'result blocked';
+                                resultDivElement.innerHTML = `
+                                    <span class="icon">❌</span>
+                                    <span class="message">Blocked content (${filter.type}): Confidence - ${filter.confidence}, Strength - ${filter.filterStrength}</span>
+                                `;
+                                resultDiv.appendChild(resultDivElement);
+                            });
+                        }
+
+                        // Handle wordPolicy
+                        if (assessment.wordPolicy) {
+                            assessment.wordPolicy.customWords?.forEach(word => {
+                                const resultDivElement = document.createElement('div');
+                                resultDivElement.className = 'result blocked';
+                                resultDivElement.innerHTML = `
+                                    <span class="icon">❌</span>
+                                    <span class="message">Blocked word: ${word.match}</span>
+                                `;
+                                resultDiv.appendChild(resultDivElement);
+                            });
+                            assessment.wordPolicy.managedWordLists?.forEach(word => {
+                                const resultDivElement = document.createElement('div');
+                                resultDivElement.className = 'result blocked';
+                                resultDivElement.innerHTML = `
+                                    <span class="icon">❌</span>
+                                    <span class="message">Blocked word (list - ${word.type}): ${word.match}</span>
+                                `;
+                                resultDiv.appendChild(resultDivElement);
+                            });
+                        }
+
+                        // Handle contextualGroundingPolicy
+                        if (assessment.contextualGroundingPolicy?.filters) {
+                            assessment.contextualGroundingPolicy.filters.forEach(filter => {
+                                if (filter.action === 'BLOCKED') {
+                                    const resultDivElement = document.createElement('div');
+                                    resultDivElement.className = 'result blocked';
+                                    resultDivElement.innerHTML = `
+                                        <span class="icon">❌</span>
+                                        <span class="message">Contextual grounding blocked: ${filter.type} (Score: ${filter.score}, Threshold: ${filter.threshold})</span>
+                                    `;
+                                    resultDiv.appendChild(resultDivElement);
+                                }
                             });
                         }
                     });
